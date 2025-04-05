@@ -75,9 +75,10 @@ function startGame() {
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
     
-    // Remove any existing fruits and "OUT!" labels
+    // Remove any existing fruits, "OUT!" labels, and overlays
     document.querySelectorAll('.fruit').forEach(fruit => fruit.remove());
     document.querySelectorAll('.game-over-text').forEach(text => text.remove());
+    document.querySelectorAll('.player-out-overlay').forEach(overlay => overlay.remove());
     
     // Start game loops
     gameInterval = setInterval(updateGame, 1000);
@@ -346,6 +347,18 @@ function decreaseLife(playerNumber) {
             gameOverText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.5)';
             gameAreaP1.appendChild(gameOverText);
             
+            // Add a transparent overlay to prevent clicking in this area
+            const overlay = document.createElement('div');
+            overlay.className = "player-out-overlay";
+            overlay.style.position = 'absolute';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            overlay.style.zIndex = '5';
+            gameAreaP1.appendChild(overlay);
+            
             // Check if both players are out
             if (player2Lives <= 0) {
                 endGame();
@@ -383,6 +396,18 @@ function decreaseLife(playerNumber) {
             gameOverText.style.fontWeight = 'bold';
             gameOverText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.5)';
             gameAreaP2.appendChild(gameOverText);
+            
+            // Add a transparent overlay to prevent clicking in this area
+            const overlay = document.createElement('div');
+            overlay.className = "player-out-overlay";
+            overlay.style.position = 'absolute';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+            overlay.style.zIndex = '5';
+            gameAreaP2.appendChild(overlay);
             
             // Check if both players are out
             if (player1Lives <= 0) {
