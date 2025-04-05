@@ -33,12 +33,12 @@ const player2Input = document.getElementById('player2-name');
 
 // Fruit types with their properties
 const fruitTypes = [
-    { name: 'apple', points: 10, speed: 3, size: 60, color: '#ff0000', image: 'images/apple.svg' },
-    { name: 'orange', points: 15, speed: 4, size: 65, color: '#ffa500', image: 'images/orange.svg' },
-    { name: 'banana', points: 20, speed: 5, size: 70, color: '#ffff00', image: 'images/banana.svg' },
-    { name: 'watermelon', points: 30, speed: 2, size: 80, color: '#00ff00', image: 'images/watermelon.svg' },
+    // { name: 'apple', points: 10, speed: 3, size: 60, color: '#ff0000', image: 'images/apple.svg' },
+    // { name: 'orange', points: 15, speed: 4, size: 65, color: '#ffa500', image: 'images/orange.svg' },
+    // { name: 'banana', points: 20, speed: 5, size: 70, color: '#ffff00', image: 'images/banana.svg' },
+    // { name: 'watermelon', points: 30, speed: 2, size: 80, color: '#00ff00', image: 'images/watermelon.svg' },
+    // { name: 'pear', points: 10, speed: 4, size: 50, color: '#00ff00', image: 'images/Pear_flat.svg' },
     { name: 'bomb', points: -50, speed: 6, size: 60, color: '#000000', image: 'images/bomb.svg' },
-    { name: 'pear', points: 10, speed: 4, size: 50, color: '#00ff00', image: 'images/Pear_flat.svg' },
     { name: 'tomato', points: 10, speed: 6, size: 60, color: '#ff0000', image: 'images/tomato_flat.svg' }
 ];
 
@@ -75,8 +75,9 @@ function startGame() {
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
     
-    // Remove any existing fruits
+    // Remove any existing fruits and "OUT!" labels
     document.querySelectorAll('.fruit').forEach(fruit => fruit.remove());
+    document.querySelectorAll('.game-over-text').forEach(text => text.remove());
     
     // Start game loops
     gameInterval = setInterval(updateGame, 1000);
@@ -334,6 +335,7 @@ function decreaseLife(playerNumber) {
             // Add "Game Over" text for this player
             const gameOverText = document.createElement('div');
             gameOverText.textContent = "OUT!";
+            gameOverText.className = "game-over-text";
             gameOverText.style.position = 'absolute';
             gameOverText.style.top = '50%';
             gameOverText.style.left = '50%';
@@ -371,6 +373,7 @@ function decreaseLife(playerNumber) {
             // Add "Game Over" text for this player
             const gameOverText = document.createElement('div');
             gameOverText.textContent = "OUT!";
+            gameOverText.className = "game-over-text";
             gameOverText.style.position = 'absolute';
             gameOverText.style.top = '50%';
             gameOverText.style.left = '50%';
