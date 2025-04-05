@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fruit Popper</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="player player1">Player 1: <span id="score-p1">0</span></div>
+            <div class="player player2">Player 2: <span id="score-p2">0</span></div>
+            <div class="current-turn">Turn: <span id="current-player">Player 1</span></div>
+            <div class="lives">Lives: <span id="lives">3</span></div>
+            <div class="time">Time: <span id="time">30</span>s</div>
+        </div>
+        <div id="game-area">
+            <div id="start-screen">
+                <h1>Fruit Popper</h1>
+                <p>Click on fruits to pop them and earn points!</p>
+                <p>Two player turn-based game. Each player gets 30 seconds per turn.</p>
+                <div class="player-names">
+                    <input type="text" id="player1-name" placeholder="Player 1 Name" value="Player 1">
+                    <input type="text" id="player2-name" placeholder="Player 2 Name" value="Player 2">
+                </div>
+                <button id="start-button">Start Game</button>
+            </div>
+            <div id="turn-transition" class="hidden">
+                <h2>Next Player's Turn</h2>
+                <p id="next-player-name">Player 2</p>
+                <button id="next-turn-button">Start Turn</button>
+            </div>
+            <div id="game-over-screen" class="hidden">
+                <h1>Game Over</h1>
+                <div class="final-scores">
+                    <p><span id="p1-name">Player 1</span>: <span id="final-score-p1">0</span></p>
+                    <p><span id="p2-name">Player 2</span>: <span id="final-score-p2">0</span></p>
+                </div>
+                <h2 id="winner-announcement">Player 1 Wins!</h2>
+                <button id="restart-button">Play Again</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
