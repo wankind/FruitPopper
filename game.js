@@ -1,30 +1,28 @@
 // Game variables
-let currentPlayer = 1; // 1 or 2
 let player1Score = 0;
 let player2Score = 0;
 let player1Name = "Player 1";
 let player2Name = "Player 2";
-let lives = 3;
+let player1Lives = 3;
+let player2Lives = 3;
 let timeLeft = 30;
 let gameInterval;
-let fruitInterval;
+let fruitIntervalP1;
+let fruitIntervalP2;
 let isGameRunning = false;
-let fruitsPopped = 0;
 
 // DOM elements
-const gameArea = document.getElementById('game-area');
+const gameAreaP1 = document.getElementById('game-area-p1');
+const gameAreaP2 = document.getElementById('game-area-p2');
 const startScreen = document.getElementById('start-screen');
-const turnTransition = document.getElementById('turn-transition');
 const gameOverScreen = document.getElementById('game-over-screen');
 const startButton = document.getElementById('start-button');
-const nextTurnButton = document.getElementById('next-turn-button');
 const restartButton = document.getElementById('restart-button');
 const scoreP1Element = document.getElementById('score-p1');
 const scoreP2Element = document.getElementById('score-p2');
-const livesElement = document.getElementById('lives');
+const livesP1Element = document.getElementById('lives-p1');
+const livesP2Element = document.getElementById('lives-p2');
 const timeElement = document.getElementById('time');
-const currentPlayerElement = document.getElementById('current-player');
-const nextPlayerElement = document.getElementById('next-player-name');
 const finalScoreP1Element = document.getElementById('final-score-p1');
 const finalScoreP2Element = document.getElementById('final-score-p2');
 const p1NameElement = document.getElementById('p1-name');
@@ -46,7 +44,6 @@ const fruitTypes = [
 
 // Event listeners
 startButton.addEventListener('click', startGame);
-nextTurnButton.addEventListener('click', startNextTurn);
 restartButton.addEventListener('click', startGame);
 
 // Initialize game
@@ -56,20 +53,19 @@ function startGame() {
     player2Name = player2Input.value || "Player 2";
     
     // Reset game state
-    currentPlayer = 1;
     player1Score = 0;
     player2Score = 0;
-    lives = 3;
+    player1Lives = 3;
+    player2Lives = 3;
     timeLeft = 30;
-    fruitsPopped = 0;
     isGameRunning = true;
     
     // Update UI
     scoreP1Element.textContent = player1Score;
     scoreP2Element.textContent = player2Score;
-    livesElement.textContent = lives;
+    livesP1Element.textContent = player1Lives;
+    livesP2Element.textContent = player2Lives;
     timeElement.textContent = timeLeft;
-    currentPlayerElement.textContent = player1Name;
     
     // Update player names in all places
     p1NameElement.textContent = player1Name;
@@ -78,41 +74,17 @@ function startGame() {
     // Hide start/game over screens
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
-    turnTransition.classList.add('hidden');
     
     // Remove any existing fruits
     document.querySelectorAll('.fruit').forEach(fruit => fruit.remove());
     
     // Start game loops
     gameInterval = setInterval(updateGame, 1000);
-    fruitInterval = setInterval(spawnFruit, 1000);
-}
-
-// Start the next player's turn
-function startNextTurn() {
-    // Switch to the next player
-    currentPlayer = currentPlayer === 1 ? 2 : 1;
     
-    // Reset turn state
-    lives = 3;
-    timeLeft = 30;
-    fruitsPopped = 0;
-    isGameRunning = true;
-    
-    // Update UI
-    livesElement.textContent = lives;
-    timeElement.textContent = timeLeft;
-    currentPlayerElement.textContent = currentPlayer === 1 ? player1Name : player2Name;
-    
-    // Hide transition screen
-    turnTransition.classList.add('hidden');
-    
-    // Remove any existing fruits
-    document.querySelectorAll('.fruit').forEach(fruit => fruit.remove());
-    
-    // Start game loops
-    gameInterval = setInterval(updateGame, 1000);
-    fruitInterval = setInterval(spawnFruit, 1000);
+    // Start spawning fruits for both players
+    const baseInterval = 1000;
+    fruitIntervalP1 = setInterval(() => spawnFruit(gameAreaP1, 1), baseInterval);
+    fruitIntervalP2 = setInterval(() => spawnFruit(gameAreaP2, 2), baseInterval);
 }
 
 // Update game state (called every second)
@@ -122,38 +94,29 @@ function updateGame() {
     
     // Increase difficulty over time by spawning fruits more frequently
     if (timeLeft % 10 === 0 && timeLeft > 0) {
-        clearInterval(fruitInterval);
+        // Increase spawn rate for both players
         const newInterval = Math.max(300, 1000 - (30 - timeLeft) * 20);
-        fruitInterval = setInterval(spawnFruit, newInterval);
+        
+        clearInterval(fruitIntervalP1);
+        clearInterval(fruitIntervalP2);
+        
+        fruitIntervalP1 = setInterval(() => spawnFruit(gameAreaP1, 1), newInterval);
+        fruitIntervalP2 = setInterval(() => spawnFruit(gameAreaP2, 2), newInterval);
     }
     
-    // Check if turn is over
-    if (timeLeft <= 0 || lives <= 0) {
-        endTurn();
-    }
-}
-
-// End the current player's turn
-function endTurn() {
-    isGameRunning = false;
-    clearInterval(gameInterval);
-    clearInterval(fruitInterval);
-    
-    // Remove any remaining fruits
-    document.querySelectorAll('.fruit').forEach(fruit => fruit.remove());
-    
-    // If both players have had their turn, end the game
-    if ((currentPlayer === 2) || (currentPlayer === 1 && player2Score > 0)) {
+    // Check if game is over
+    if (timeLeft <= 0 || (player1Lives <= 0 && player2Lives <= 0)) {
         endGame();
-    } else {
-        // Prepare for next player's turn
-        nextPlayerElement.textContent = player2Name;
-        turnTransition.classList.remove('hidden');
     }
 }
 
 // End the game and show results
 function endGame() {
+    isGameRunning = false;
+    clearInterval(gameInterval);
+    clearInterval(fruitIntervalP1);
+    clearInterval(fruitIntervalP2);
+    
     // Update final scores
     finalScoreP1Element.textContent = player1Score;
     finalScoreP2Element.textContent = player2Score;
@@ -169,10 +132,13 @@ function endGame() {
     
     // Show game over screen
     gameOverScreen.classList.remove('hidden');
+    
+    // Remove any remaining fruits
+    document.querySelectorAll('.fruit').forEach(fruit => fruit.remove());
 }
 
-// Spawn a new fruit
-function spawnFruit() {
+// Spawn a new fruit in the specified game area for the specified player
+function spawnFruit(gameArea, playerNumber) {
     if (!isGameRunning) return;
     
     // Select random fruit type (10% chance for a bomb)
@@ -195,6 +161,7 @@ function spawnFruit() {
     fruit.dataset.type = fruitType.name;
     fruit.dataset.points = fruitType.points;
     fruit.dataset.color = fruitType.color;
+    fruit.dataset.player = playerNumber;
     
     // Set fruit appearance
     fruit.style.width = `${fruitType.size}px`;
@@ -213,30 +180,30 @@ function spawnFruit() {
     };
     fruit.appendChild(img);
     
-    // Position fruit at random horizontal position at the bottom of the screen
+    // Position fruit at random horizontal position at the top of the screen
     const gameAreaWidth = gameArea.clientWidth;
     const gameAreaHeight = gameArea.clientHeight;
     const randomX = Math.random() * (gameAreaWidth - fruitType.size);
     fruit.style.left = `${randomX}px`;
-    fruit.style.bottom = '0px';
+    fruit.style.top = '0px';
     
     // Add click event to pop the fruit
     fruit.addEventListener('click', () => {
         if (!fruit.classList.contains('popped')) {
-            popFruit(fruit);
+            popFruit(fruit, gameArea);
         }
     });
     
     // Add fruit to game area
     gameArea.appendChild(fruit);
     
-    // Animate fruit moving upward
+    // Animate fruit falling downward
     const animationDuration = Math.random() * 2 + 2; // 2-4 seconds
-    fruit.style.transition = `bottom ${animationDuration}s ease-out`;
+    fruit.style.transition = `top ${animationDuration}s linear`;
     
     // Start animation in the next frame to ensure transition works
     requestAnimationFrame(() => {
-        fruit.style.bottom = `${gameAreaHeight + fruitType.size}px`;
+        fruit.style.top = `${gameAreaHeight}px`;
     });
     
     // Remove fruit after animation completes if not popped
@@ -244,7 +211,7 @@ function spawnFruit() {
         if (gameArea.contains(fruit) && !fruit.classList.contains('popped')) {
             // If it was a regular fruit (not a bomb) and it wasn't popped, lose a life
             if (fruitType.name !== 'bomb') {
-                decreaseLife();
+                decreaseLife(playerNumber);
             }
             fruit.remove();
         }
@@ -252,14 +219,15 @@ function spawnFruit() {
 }
 
 // Pop a fruit when clicked
-function popFruit(fruit) {
+function popFruit(fruit, gameArea) {
     // Mark as popped to prevent multiple clicks
     fruit.classList.add('popped');
     
-    // Get points and color from the fruit
+    // Get points, color, and player from the fruit
     const points = parseInt(fruit.dataset.points);
     const fruitType = fruit.dataset.type;
     const fruitColor = fruit.dataset.color;
+    const playerNumber = parseInt(fruit.dataset.player);
     
     // Get fruit position for explosion effect
     const fruitRect = fruit.getBoundingClientRect();
@@ -268,10 +236,10 @@ function popFruit(fruit) {
     const fruitY = fruitRect.top - gameAreaRect.top + fruitRect.height / 2;
     
     // Create explosion effect
-    createExplosion(fruitX, fruitY, fruitColor);
+    createExplosion(fruitX, fruitY, fruitColor, gameArea);
     
-    // Update score for current player
-    if (currentPlayer === 1) {
+    // Update score for the player
+    if (playerNumber === 1) {
         player1Score += points;
         scoreP1Element.textContent = player1Score;
     } else {
@@ -281,9 +249,7 @@ function popFruit(fruit) {
     
     // If it's a bomb, decrease life
     if (fruitType === 'bomb') {
-        decreaseLife();
-    } else {
-        fruitsPopped++;
+        decreaseLife(playerNumber);
     }
     
     // Show points animation
@@ -312,7 +278,7 @@ function popFruit(fruit) {
 }
 
 // Create explosion effect
-function createExplosion(x, y, color) {
+function createExplosion(x, y, color, gameArea) {
     const explosion = document.createElement('div');
     explosion.className = 'explosion';
     explosion.style.left = `${x}px`;
@@ -344,20 +310,82 @@ function createExplosion(x, y, color) {
     }, 500);
 }
 
-// Decrease life when a fruit is missed or a bomb is clicked
-function decreaseLife() {
-    lives--;
-    livesElement.textContent = lives;
-    
-    // Visual feedback for losing a life
-    document.querySelector('.lives').classList.add('life-lost');
-    setTimeout(() => {
-        document.querySelector('.lives').classList.remove('life-lost');
-    }, 500);
-    
-    // Check if turn is over
-    if (lives <= 0) {
-        endTurn();
+// Decrease life for the specified player
+function decreaseLife(playerNumber) {
+    if (playerNumber === 1) {
+        player1Lives--;
+        livesP1Element.textContent = player1Lives;
+        
+        // Visual feedback for losing a life
+        const livesElement = document.querySelector('.player1-side .lives');
+        livesElement.classList.add('life-lost');
+        setTimeout(() => {
+            livesElement.classList.remove('life-lost');
+        }, 500);
+        
+        // Check if player is out
+        if (player1Lives <= 0) {
+            // Stop spawning fruits for this player
+            clearInterval(fruitIntervalP1);
+            
+            // Remove all fruits for this player
+            gameAreaP1.querySelectorAll('.fruit').forEach(fruit => fruit.remove());
+            
+            // Add "Game Over" text for this player
+            const gameOverText = document.createElement('div');
+            gameOverText.textContent = "OUT!";
+            gameOverText.style.position = 'absolute';
+            gameOverText.style.top = '50%';
+            gameOverText.style.left = '50%';
+            gameOverText.style.transform = 'translate(-50%, -50%)';
+            gameOverText.style.color = 'white';
+            gameOverText.style.fontSize = '3rem';
+            gameOverText.style.fontWeight = 'bold';
+            gameOverText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.5)';
+            gameAreaP1.appendChild(gameOverText);
+            
+            // Check if both players are out
+            if (player2Lives <= 0) {
+                endGame();
+            }
+        }
+    } else {
+        player2Lives--;
+        livesP2Element.textContent = player2Lives;
+        
+        // Visual feedback for losing a life
+        const livesElement = document.querySelector('.player2-side .lives');
+        livesElement.classList.add('life-lost');
+        setTimeout(() => {
+            livesElement.classList.remove('life-lost');
+        }, 500);
+        
+        // Check if player is out
+        if (player2Lives <= 0) {
+            // Stop spawning fruits for this player
+            clearInterval(fruitIntervalP2);
+            
+            // Remove all fruits for this player
+            gameAreaP2.querySelectorAll('.fruit').forEach(fruit => fruit.remove());
+            
+            // Add "Game Over" text for this player
+            const gameOverText = document.createElement('div');
+            gameOverText.textContent = "OUT!";
+            gameOverText.style.position = 'absolute';
+            gameOverText.style.top = '50%';
+            gameOverText.style.left = '50%';
+            gameOverText.style.transform = 'translate(-50%, -50%)';
+            gameOverText.style.color = 'white';
+            gameOverText.style.fontSize = '3rem';
+            gameOverText.style.fontWeight = 'bold';
+            gameOverText.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.5)';
+            gameAreaP2.appendChild(gameOverText);
+            
+            // Check if both players are out
+            if (player1Lives <= 0) {
+                endGame();
+            }
+        }
     }
 }
 

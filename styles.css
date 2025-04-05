@@ -15,10 +15,10 @@ body {
 }
 
 .game-container {
-    width: 800px;
+    width: 1000px;
     height: 600px;
     position: relative;
-    background-color: #87ceeb;
+    background-color: #107098;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
     overflow: hidden;
@@ -26,12 +26,44 @@ body {
 
 .game-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     padding: 10px 20px;
     background-color: rgba(0, 0, 0, 0.7);
     color: white;
     font-size: 1.2rem;
-    flex-wrap: wrap;
+    z-index: 5;
+}
+
+.split-screen {
+    display: flex;
+    width: 100%;
+    height: calc(100% - 50px);
+}
+
+.player-side {
+    flex: 1;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+}
+
+.player1-side {
+    border-right: 2px solid rgba(0, 0, 0, 0.3);
+    background: linear-gradient(to bottom, #ff6b6b20, #ff6b6b40);
+}
+
+.player2-side {
+    border-left: 2px solid rgba(0, 0, 0, 0.3);
+    background: linear-gradient(to bottom, #4ecdc420, #4ecdc440);
+}
+
+.player-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    z-index: 5;
 }
 
 .player {
@@ -48,18 +80,10 @@ body {
     color: #4ecdc4;
 }
 
-.current-turn {
-    padding: 5px 10px;
-    border-radius: 5px;
-    background-color: rgba(255, 255, 255, 0.2);
-    font-weight: bold;
-}
-
-#game-area {
+.game-area {
     position: relative;
     width: 100%;
-    height: calc(100% - 50px);
-    background: linear-gradient(to bottom, #87ceeb, #1e90ff);
+    height: calc(100% - 40px);
     overflow: hidden;
 }
 
@@ -118,7 +142,16 @@ body {
     }
 }
 
-#start-screen, #game-over-screen, #turn-transition {
+@keyframes fall {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(100vh);
+    }
+}
+
+.overlay-screen {
     position: absolute;
     top: 0;
     left: 0;
@@ -128,7 +161,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.8);
     color: white;
     text-align: center;
     z-index: 10;
