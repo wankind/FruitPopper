@@ -5,10 +5,12 @@ let player1Name = "Player 1";
 let player2Name = "Player 2";
 let player1Lives = 3;
 let player2Lives = 3;
-let timeLeft = 30;
+let timeLeft = 120; // Changed to 2 minutes (120 seconds)
 let gameInterval;
 let fruitIntervalP1;
 let fruitIntervalP2;
+let chippieIntervalP1;
+let chippieIntervalP2;
 let isGameRunning = false;
 
 // DOM elements
@@ -39,7 +41,8 @@ const fruitTypes = [
     // { name: 'watermelon', points: 30, speed: 2, size: 80, color: '#00ff00', image: 'images/watermelon.svg' },
     // { name: 'pear', points: 10, speed: 4, size: 50, color: '#00ff00', image: 'images/Pear_flat.svg' },
     { name: 'bomb', points: -50, speed: 6, size: 60, color: '#000000', image: 'images/bomb.svg' },
-    { name: 'tomato', points: 10, speed: 6, size: 60, color: '#ff0000', image: 'images/tomato_flat.svg' }
+    { name: 'tomato', points: 10, speed: 6, size: 60, color: '#ff0000', image: 'images/tomato_flat.svg' },
+    { name: 'chippie', points: 30, speed: 7, size: 45, color: '#ffd700', image: 'images/potato.svg' } // Special rare fruit
 ];
 
 // Event listeners
@@ -57,7 +60,7 @@ function startGame() {
     player2Score = 0;
     player1Lives = 3;
     player2Lives = 3;
-    timeLeft = 30;
+    timeLeft = 120; // Changed to 2 minutes
     isGameRunning = true;
     
     // Update UI
@@ -83,10 +86,15 @@ function startGame() {
     // Start game loops
     gameInterval = setInterval(updateGame, 1000);
     
-    // Start spawning fruits for both players
+    // Start spawning regular fruits for both players
     const baseInterval = 1000;
     fruitIntervalP1 = setInterval(() => spawnFruit(gameAreaP1, 1), baseInterval);
     fruitIntervalP2 = setInterval(() => spawnFruit(gameAreaP2, 2), baseInterval);
+    
+    // Start spawning chippie (special fruit) at a lower frequency
+    const chippieInterval = 8000; // Every 8 seconds
+    chippieIntervalP1 = setInterval(() => spawnChippie(gameAreaP1, 1), chippieInterval);
+    chippieIntervalP2 = setInterval(() => spawnChippie(gameAreaP2, 2), chippieInterval);
 }
 
 // Update game state (called every second)
@@ -95,9 +103,9 @@ function updateGame() {
     timeElement.textContent = timeLeft;
     
     // Increase difficulty over time by spawning fruits more frequently
-    if (timeLeft % 10 === 0 && timeLeft > 0) {
+    if (timeLeft % 20 === 0 && timeLeft > 0) { // Adjusted for longer game time
         // Increase spawn rate for both players
-        const newInterval = Math.max(300, 1000 - (30 - timeLeft) * 20);
+        const newInterval = Math.max(300, 1000 - (120 - timeLeft) * 5); // Adjusted formula
         
         clearInterval(fruitIntervalP1);
         clearInterval(fruitIntervalP2);
@@ -118,6 +126,8 @@ function endGame() {
     clearInterval(gameInterval);
     clearInterval(fruitIntervalP1);
     clearInterval(fruitIntervalP2);
+    clearInterval(chippieIntervalP1);
+    clearInterval(chippieIntervalP2);
     
     // Update final scores
     finalScoreP1Element.textContent = player1Score;
@@ -139,22 +149,104 @@ function endGame() {
     document.querySelectorAll('.fruit').forEach(fruit => fruit.remove());
 }
 
+// Spawn a special chippie (rare fruit)
+function spawnChippie(gameArea, playerNumber) {
+    if (!isGameRunning) return;
+    
+    // Don't spawn chippie if player is out
+    if ((playerNumber === 1 && player1Lives <= 0) || 
+        (playerNumber === 2 && player2Lives <= 0)) {
+        return;
+    }
+    
+    // Get the chippie fruit type
+    const chippieType = fruitTypes.find(fruit => fruit.name === 'chippie');
+    
+    // Create chippie element
+    const chippie = document.createElement('div');
+    chippie.className = 'fruit chippie';
+    chippie.dataset.type = chippieType.name;
+    chippie.dataset.points = chippieType.points;
+    chippie.dataset.color = chippieType.color;
+    chippie.dataset.player = playerNumber;
+    
+    // Set chippie appearance
+    chippie.style.width = `${chippieType.size}px`;
+    chippie.style.height = `${chippieType.size}px`;
+    chippie.style.borderRadius = '50%';
+    chippie.style.backgroundColor = chippieType.color;
+    chippie.style.boxShadow = '0 0 10px #ffd700, 0 0 20px #ffd700'; // Add glow effect
+    chippie.style.zIndex = '2'; // Make it appear above regular fruits
+    
+    // Try to load image, fallback to colored circle if image fails
+    const img = document.createElement('img');
+    img.src = chippieType.image;
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.onerror = () => {
+        img.style.display = 'none';
+    };
+    chippie.appendChild(img);
+    
+    // Position chippie at random horizontal position at the top of the screen
+    const gameAreaWidth = gameArea.clientWidth;
+    const gameAreaHeight = gameArea.clientHeight;
+    const randomX = Math.random() * (gameAreaWidth - chippieType.size);
+    chippie.style.left = `${randomX}px`;
+    chippie.style.top = '0px';
+    
+    // Make chippie harder to click by adding movement animation
+    chippie.style.animation = 'wobble 0.5s infinite alternate';
+    
+    // Add click event to pop the chippie
+    chippie.addEventListener('click', () => {
+        if (!chippie.classList.contains('popped')) {
+            popFruit(chippie, gameArea);
+        }
+    });
+    
+    // Add chippie to game area
+    gameArea.appendChild(chippie);
+    
+    // Animate chippie falling downward (faster than regular fruits)
+    const animationDuration = 1.5; // Faster than regular fruits
+    chippie.style.transition = `top ${animationDuration}s linear`;
+    
+    // Start animation in the next frame to ensure transition works
+    requestAnimationFrame(() => {
+        chippie.style.top = `${gameAreaHeight}px`;
+    });
+    
+    // Remove chippie after animation completes if not popped
+    setTimeout(() => {
+        if (gameArea.contains(chippie) && !chippie.classList.contains('popped')) {
+            chippie.remove();
+        }
+    }, animationDuration * 1000);
+}
+
 // Spawn a new fruit in the specified game area for the specified player
 function spawnFruit(gameArea, playerNumber) {
     if (!isGameRunning) return;
     
+    // Don't spawn fruits if player is out
+    if ((playerNumber === 1 && player1Lives <= 0) || 
+        (playerNumber === 2 && player2Lives <= 0)) {
+        return;
+    }
+    
     // Select random fruit type (10% chance for a bomb)
     const isBomb = Math.random() < 0.1;
     const bombIndex = fruitTypes.findIndex(fruit => fruit.name === 'bomb');
+    const tomatoIndex = fruitTypes.findIndex(fruit => fruit.name === 'tomato');
     
-    // If bomb, use the bomb; otherwise select from non-bomb fruits
+    // If bomb, use the bomb; otherwise select tomato (not chippie - that's spawned separately)
     let fruitType;
     if (isBomb) {
         fruitType = fruitTypes[bombIndex];
     } else {
-        // Create array of non-bomb fruits
-        const regularFruits = fruitTypes.filter(fruit => fruit.name !== 'bomb');
-        fruitType = regularFruits[Math.floor(Math.random() * regularFruits.length)];
+        fruitType = fruitTypes[tomatoIndex];
     }
     
     // Create fruit element
@@ -329,6 +421,7 @@ function decreaseLife(playerNumber) {
         if (player1Lives <= 0) {
             // Stop spawning fruits for this player
             clearInterval(fruitIntervalP1);
+            clearInterval(chippieIntervalP1);
             
             // Remove all fruits for this player
             gameAreaP1.querySelectorAll('.fruit').forEach(fruit => fruit.remove());
@@ -379,6 +472,7 @@ function decreaseLife(playerNumber) {
         if (player2Lives <= 0) {
             // Stop spawning fruits for this player
             clearInterval(fruitIntervalP2);
+            clearInterval(chippieIntervalP2);
             
             // Remove all fruits for this player
             gameAreaP2.querySelectorAll('.fruit').forEach(fruit => fruit.remove());

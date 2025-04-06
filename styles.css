@@ -157,6 +157,8 @@ body {
     color: white;
     text-align: center;
     z-index: 10;
+    padding: 20px;
+    overflow-y: auto;
 }
 
 .hidden {
@@ -239,17 +241,44 @@ input[type="text"] {
 }
 
 .game-title {
-    font-size: 3.5rem;
+    font-size: 2.8rem;
     text-align: center;
     color: #ffc107;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     font-weight: bold;
     text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
 }
 
 .game-subtitle {
-    font-size: 2rem;
+    font-size: 1.8rem;
     color: #ffffff;
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+}
+
+.logo-container {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.simba-logo {
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+/* Special styling for the chippie */
+.chippie {
+    animation: wobble 0.5s infinite alternate;
+    box-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700;
+    z-index: 2;
+}
+
+@keyframes wobble {
+    0% {
+        transform: translateX(-3px) rotate(-2deg);
+    }
+    100% {
+        transform: translateX(3px) rotate(2deg);
+    }
 }
